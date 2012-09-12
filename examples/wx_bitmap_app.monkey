@@ -5,7 +5,7 @@ Global app:MyApp = New MyApp
 
 Function Main()
 	
-	wxMonkeyStart(New app)
+	wxMonkeyStart(app)
 	
 End
 
