@@ -4,7 +4,7 @@ This is a port of wxWidgets to the programming language Monkey.
 This is highly experimental, and there is no guarantee.
 
 To install, you must be able to create a new target comfortably:
-1. download and build wxwidgets as a static library (recommend non-monolithic + opengl switches)
+1. download and build wxwidgets as a static library (recommend non-monolithic + opengl + non-debug switches)
 2. remember location of build and include files
 3. copy targets/stdcpp.monkey to your local monkey trans/targets folder
 4. rebuild trans, and copy to monkey/bin folder
