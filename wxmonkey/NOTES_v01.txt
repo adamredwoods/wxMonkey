@@ -1,0 +1,21 @@
+
+wxMonkey
+(c) 2012 Adam Piette
+--------------------
+
+NOTES
+
+- use wxString() function to convert to and from wxStrings and monkey Strings. wxMString is a transparent class to give errors if it doesn't match.
+
+- you cannot override New() for any extended wx Classes. It will not allow the base class to be initiated.
+  Use New(), then the Create() method in the new instance.
+  
+- to create a new class from an extended wx class, you will need to create some cpp glue code. most glue code is fairly simple, where it is just a name of the class, inheriting Object class (from monkey),  then empty constructors and decontructors.
+
+- if a referenced argument is needed, use wxMonkeyRef class. this will add "&class" or "class.method"
+
+- if a dereferenced pointer is needed, use wxMonkeyDeref class.
+
+- if a function pointer is needed, use the function wxFuncPtr(). It creates a function pointer at monkey compile time.
+
+- the wxApp must be global. initialise with wxMonkeyStart(app)
