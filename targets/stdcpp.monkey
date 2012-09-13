@@ -201,13 +201,19 @@ Class StdcppTarget Extends Target
 		main=ReplaceBlock( main,"CONFIG",Config() )
 		
 		If use_wx
-			
-
-			
+	
 		Endif
 		
 		
 		SaveString main,"main.cpp"
+		
+		
+		If HostOS = "macos" And use_wx
+		
+			MakeXcode()
+
+		Else
+		
 
 		If OPT_ACTION>=ACTION_BUILD
 
@@ -238,6 +244,36 @@ Class StdcppTarget Extends Target
 			If OPT_ACTION>=ACTION_RUN
 				Execute "~q"+RealPath( out )+"~q"
 			Endif
+		Endif
+
+		Endif	
+
+	End
+	
+
+	
+	Method MakeXcode()
+		CreateDataDir "xcode/data"
+
+		'Local main$=LoadString( "main.cpp" )
+		
+		'main=ReplaceBlock( main,"TRANSCODE",transCode )
+		'main=ReplaceBlock( main,"CONFIG",Config() )
+		
+		'SaveString main,"main.cpp"
+		
+		If OPT_ACTION>=ACTION_BUILD
+
+			ChangeDir "xcode"
+			
+			Execute "xcodebuild -configuration "+CASED_CONFIG+" "+cc_opts
+			
+			If OPT_ACTION>=ACTION_RUN
+				ChangeDir "build/"+CASED_CONFIG
+				ChangeDir "wxMonkeyApp.app/Contents/MacOS"
+				Execute "./wxMonkeyApp"
+			Endif
+			
 		Endif
 	End
 	

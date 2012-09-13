@@ -9,52 +9,6 @@
 
 
 
-void gc_force() {
-
-/*	
-	//append unmarked list to end of free list
-	gc_object *head=gc_unmarked_list.succ;
-	gc_object *tail=gc_unmarked_list.pred;
-	gc_object *succ=&gc_free_list;
-	gc_object *pred=succ->pred;
-	head->pred=pred;
-	tail->succ=succ;
-	pred->succ=head;
-	succ->pred=tail;
-	
-	//move marked to unmarked.
-	gc_unmarked_list=gc_marked_list;
-	gc_unmarked_list.succ->pred=gc_unmarked_list.pred->succ=&gc_unmarked_list;
-	
-	//clear marked.
-	gc_marked_list.succ=gc_marked_list.pred=&gc_marked_list;
-*/
-	//if (GC_LIST_EMPTY( gc_unmarked_list )) {
-
-		gc_object* force = new gc_object();
-		//force = 0;
-		//gc_mark_roots();
-	//}
-	
-	//if (GC_LIST_EMPTY( gc_queued_list )) {
-		//gc_mark_roots();
-	//}
-	
-	/*
-	while( true ){
-		gc_object *p=gc_free_list.succ;
-		if( !p || p==&gc_free_list ){
-
-			break;
-		}
-		GC_REMOVE_NODE(p);
-		delete p;	//...to gc_free
-		printf("delete \n"); fflush(stdout);
-	}
-	*/
-	
-}
-
 wxString wxStringConv(const String& s) { 
 	int n = s.Length();
 	if (n<1) return wxT(L"");
@@ -71,7 +25,15 @@ wxString wxStringConv(const String& s) {
 	}; //return wxString::wxString(s.ToCString<char>() ); };
 	
 //String wxStringConv(const wxString& s) { return String( s.wc_str(wxConvLibc), s.Len() ); };
-String wxStringConv(const wxString& s) { return String( s.wc_str(wxConvLibc) ); };
+#ifdef __OBJC__
+
+String wxStringConv(const wxString& s) { NSString* nss= [NSString stringWithUTF8String: wxstring.mb_str(wxConvUTF8)] ); return String(nss); }; 
+
+#else
+
+String wxStringConv(const wxString& s) { return String( s.wc_str(wxConvUTF8) ); };
+
+#endif
 
 
 class wxMString : public wxString {
@@ -85,8 +47,12 @@ public:
 class GCTimer : public wxTimer {
 public:
 	//GCTimer(wxEvtHandler* e=NULL, int id=-1):wxTimer(e, id) {};
+	gc_object* force;
+	
 	void Notify() {
-		gc_force();
+		//gc_force();
+		gc_object* force = new gc_object;
+		force=0;
 		gc_collect();
 		
 	}
@@ -146,7 +112,7 @@ public:
 	wxMonkeyFrame();
 	~wxMonkeyFrame();
 	//wxMonkeyFrame(wxString str);
-	wxMonkeyFrame(const wxString& title);
+	//wxMonkeyFrame(const wxString& title);
 	//bool Create_(wxWindow* parent, int id, wxString str);
 	
 	void mark() {
@@ -172,9 +138,9 @@ wxMonkeyFrame::~wxMonkeyFrame() {
 class wxMonkeyPanel : public Object, public wxPanel {
 public:	
 	
-	wxMonkeyPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos, const wxSize& size, long style, const wxString& name) : wxPanel(parent,id,pos,size,style,name) {};
+	wxMonkeyPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=0, const wxString& name = wxT(L"panel")) : wxPanel(parent,id,pos,size,style,name) {};
 	
-	static wxMonkeyPanel* Create_(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos, const wxSize& size, long style, const wxString& name) { 
+	static wxMonkeyPanel* Create_(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=0, const wxString& name= wxT(L"panel")) { 
 		return new wxMonkeyPanel(parent,id,pos,size,style,name);
 		}
 		
@@ -278,7 +244,7 @@ public:
 };
 wxMonkeyBitmap::wxMonkeyBitmap() :wxBitmap() {};
 
-
+/*
 // ***** WORKS with GC! ******
 class wxMonkeyBitmap2 : public Object {
 public:
@@ -324,3 +290,5 @@ private:
 	wxBitmap* bitmap;
 	
 };
+
+*/

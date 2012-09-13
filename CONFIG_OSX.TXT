@@ -1,0 +1,6 @@
+
+CPP_INCREMENTAL_GC=1
+CPP_DOUBLE_PRECISION_FLOATS=1
+CC_OPTS = HEADER_SEARCH_PATHS="/Monkey/modules/wxmonkey/wxMac-2.8.12/include" LIBRARY_SEARCH_PATHS="/Monkey/modules/wxmonkey/wxMac-2.8.12/lib" 
+CC_OPTS3 = OTHER_CFLAGS="-D__WXRELEASE__ -D__WXMAC__ "
+CC_OPTS2 = OTHER_LDFLAGS=" -lwx_base_carbon-2.8  -lwx_mac_core-2.8 -lwxjpeg-2.8 -lwxpng-2.8 -lwxtiff-2.8"

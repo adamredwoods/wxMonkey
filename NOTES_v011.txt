@@ -23,3 +23,7 @@ NOTES
 - if a function pointer is needed, use the function wxFuncPtr(). It creates a function pointer at monkey compile time.
 
 - the wxApp must be global. initialise with wxMonkeyStart(app)
+
+- to build OSX I used:
+./configure CFLAGS="$arch_flags" CXXFLAGS="$arch_flags" CPPFLAGS="$arch_flags" LDFLAGS="$arch_flags" OBJCFLAGS="$arch_flags" OBJCXXFLAGS="$arch_flags" --disable-shared --with-opengl --with-macosx-sdk=/Developer/SDKs/MacOSX10.5.sdk --with-macosx-version-min=10.5
+and then 'make'
