@@ -1,9 +1,11 @@
 
+
 #include <wx/wxprec.h>
+
 #ifndef WX_PRECOMP
     #include "wx/wx.h"
 #endif
-
+#include <wx/glcanvas.h>
 
 #define IMPLEMENT_APP_MONKEY(app) wxAppInitializer wxTheAppInitializer((wxAppInitializerFunction) app); 
 
@@ -60,13 +62,17 @@ public:
 
 //const int TIMER_ID = wxID_ANY;
 
+
+
+
+
 class wxMonkeyApp : public Object, public wxApp {
 public:	
 	
 	wxMonkeyApp() {};
 
 	~wxMonkeyApp() {
-		
+	
 		delete gctimer;
 	
 	};
@@ -78,22 +84,33 @@ public:
 
 	
 	virtual bool OnInit();
+
 	//int MainLoop();
 	virtual bool OnMonkeyInit()=0;
+	
+	void CallGC(wxIdleEvent& event);
 	
 	GCTimer* gctimer;
 	//wxTimer* gctimer;
 	
 };
 
-
+void wxMonkeyApp::CallGC(wxIdleEvent& event) {
+	//printf("GC "); fflush(stdout);
+	gctimer->Notify();
+};
 
 bool wxMonkeyApp::OnInit() {
 	//setup gctimer here, not ctor, will override others otherwise (weird wx thing)
 	gctimer = new GCTimer();
-	gctimer->Start(1000);
-	OnMonkeyInit();
+	//gctimer->Start(1000);
+	
+	Connect( wxEVT_IDLE, wxIdleEventHandler(wxMonkeyApp::CallGC));
+	
+	return OnMonkeyInit();
 };
+
+
 
 /*
 int wxMonkeyApp::MainLoop() {
@@ -157,7 +174,10 @@ public:
 wxMonkeyPanel::wxMonkeyPanel() {};
 wxMonkeyPanel::~wxMonkeyPanel() {};
 
-class wxMonkeyDialog : public wxDialog {
+//
+// ** no GC on modal dialogs. no way to retain on threaded.
+//
+class wxMonkeyDialog :  public Object, public wxDialog {
 public:
 	wxMonkeyDialog(wxWindow* parent, wxWindowID id=wxID_ANY, const wxString& title=wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE, const wxString& name = "dialogBox");
 	wxMonkeyDialog() :wxDialog( ) {};
@@ -165,19 +185,23 @@ public:
 	//void mark() { Object::mark(); };
 };
 
-class wxMonkeyFileDialog : public wxFileDialog {
+class wxMonkeyFileDialog : public Object, public wxFileDialog {
 public:
-	wxMonkeyFileDialog() :wxFileDialog(NULL) {};
-	~wxMonkeyFileDialog() {};
-	//void mark() { Object::mark(); };
+
+	wxMonkeyFileDialog() :wxFileDialog(NULL) { };
+	~wxMonkeyFileDialog() { };
+	//~wxMonkeyFileDialog() {printf("wxMonkeyFileDialog dtor\n"); fflush(stdout);};
+	//void mark() { Object::mark();};
+	String debug() { return "(wxMonkeyFileDialog)"; }
 };
 
-class wxMonkeyMessageDialog : public wxMessageDialog {
+class wxMonkeyMessageDialog : public Object, public wxMessageDialog {
 public:
 	wxMonkeyMessageDialog() :wxMessageDialog(NULL,L"") {};
 	~wxMonkeyMessageDialog() {};
 	bool Create(wxWindow* parent, const wxString& title, const wxString& caption, long style = wxDEFAULT_DIALOG_STYLE, const wxPoint& pos = wxDefaultPosition);
 	//void mark() { Object::mark(); };
+	
 };
 
 bool wxMonkeyMessageDialog::Create(wxWindow* parent, const wxString& title, const wxString& caption, long style , const wxPoint& pos ) {
@@ -208,6 +232,63 @@ public:
 	//void Notify() {};
 };
 
+int glattrib [] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER};
+
+
+class wxMonkeyGLContext : public Object {
+public:
+
+	wxGLContext* context;
+	
+	wxMonkeyGLContext() {};
+	~wxMonkeyGLContext() { delete context;};
+	void mark() { Object::mark(); };
+	
+	void Create_( wxGLCanvas* win, const wxGLContext* other=NULL ) {
+		context = new wxGLContext(win, other);
+	}
+	//void SetCurrent_(wxGLCanvas* win) {
+		//context->SetCurrent((wxGLCanvas&)*win);
+		//context->SetCurrent((wxGLCanvas&)win);
+	//}
+
+	void SetCurrent2(const wxGLCanvas* canvas) {
+		context->SetCurrent(*canvas);
+	}
+	
+	
+	
+};
+
+class wxMonkeyGLCanvas :  public Object, public wxGLCanvas {
+public:
+	
+	
+	wxMonkeyGLCanvas() :wxGLCanvas(NULL, wxID_ANY, glattrib, wxDefaultPosition, wxSize(600,400), 0, "GLCANVAS" ) {};
+	~wxMonkeyGLCanvas() {};
+	void mark() {  };
+	
+	void Create_(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style=0, const wxString& name="GLCanvas", int attribList = 0, const wxPalette& palette = wxNullPalette) {
+#if defined(__WXMSW__)		
+		Create(parent,id,pos,size,style,name);
+		SetupPixelFormat(glattrib);
+		//SetupPixelFormat(&attribList);
+		//SetupPalette(palette);
+#else
+		Create(parent,id,pos,size,style,name,&attribList,palette);
+#endif
+	}
+	
+	void SetCurrent_(wxMonkeyGLContext* RC) {
+		//wxGLCanvas::SetCurrent(*(RC->context));
+		RC->SetCurrent2(this);
+	}
+	
+};
+
+
+
+
 
 
 // ***** WORKS with GC! ******
@@ -229,18 +310,7 @@ public:
 		//fflush(stdout);
 		Object::mark(); 
 	}
-/*	
-	void *operator new( size_t size ){
-		printf("mbNEW: %i\n",size);
-		fflush(stdout);
-		return gc_malloc( size );
-	}
-	
-	void operator delete( void *p ){
-		printf("mbDELETE\n");
-		fflush(stdout);
-		gc_free( (gc_object*)p );
-	}*/
+
 };
 wxMonkeyBitmap::wxMonkeyBitmap() :wxBitmap() {};
 
