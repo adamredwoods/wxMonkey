@@ -9,10 +9,12 @@ Global wxDefaultSize:wxSize = "wxDefaultSize"
 
 Function wxCreateSize:wxSize(w:Int, h:Int) = "wxSize"
 
-Class wxSize
+Class wxSize = "wxSize"
 	
-	Field width:Int
-	Field height:int
+	Field width:Int="x"
+	Field height:Int="y"
+	Field x:Int
+	Field y:Int
 	
 	Function Create:wxSize(w:Int, h:Int) = "new wxSize"
 	
@@ -47,3 +49,4 @@ Class wxSize
 End
 
 Public
+

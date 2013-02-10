@@ -1,13 +1,15 @@
 
-Import target
+Import builder
 
 Class wxTranslator Extends CppTranslator
+
+
 
 	Method TransType$( ty:Type )
 		Local objty:ObjectType=ObjectType( ty )
 		If objty
 			
-			If ty.GetClass() = "wxMonkeyRef" Or (objty.classDecl.superTy And objty.classDecl.superTy.ident = "wxMonkeyRef")
+			If ty.GetClass() = "VarPtr" Or (objty.classDecl.superTy And objty.classDecl.superTy.ident = "VarPtr")
 				'Print "wxMonkeyEvent found"
 				
 				Return ty.GetClass().munged+"&"
@@ -29,7 +31,7 @@ Class wxTranslator Extends CppTranslator
 				'Return decl.munged+TransArgs( args,decl )
 			'Endif
 			Local cl:ClassDecl = ClassDecl( decl.scope)
-			If (cl) And ((cl.ident="wxMonkeyRef") Or (cl.superClass And cl.superClass="wxMonkeyRef"))
+			If (cl) And ((cl.ident="VarPtr") Or (cl.superClass And cl.superClass="VarPtr"))
 				Local newline$ = Super.TransFunc(decl,args,lhs )
 				Return newline.Replace("->",".")
 				'Return cl.munged+"."+args[0]
@@ -40,7 +42,7 @@ Class wxTranslator Extends CppTranslator
 		
 		If decl.IsExtern() And args
 			'Print decl.munged
-			If decl.munged="wxFuncPtr"
+			If decl.munged="FuncPtr"
 				
 				'Print "wxMonkeyFunc found"
 
@@ -90,7 +92,7 @@ Class wxTranslator Extends CppTranslator
 		
 		If ObjectType( dst ) And ObjectType( src )
 			
-			If dst.GetClass()="wxMonkeyDeref"
+			If dst.GetClass()="Pointer"
 				'Print "monkeyDeref"
 				Return Bra( "*"+expr.expr.Trans() )
 			Endif
@@ -121,7 +123,7 @@ Class wxTranslator Extends CppTranslator
 			If decl
 				Local oty:= ObjectType(decl.type)
 				If oty
-					If (oty.GetClass() = "wxMonkeyRef" Or (oty.classDecl And oty.classDecl.superTy And oty.classDecl.superTy.ident = "wxMonkeyRef"))
+					If (oty.GetClass() = "VarPtr" Or (oty.classDecl And oty.classDecl.superTy And oty.classDecl.superTy.ident = "VarPtr"))
 						Return 0
 					Endif
 				Endif
@@ -132,150 +134,104 @@ Class wxTranslator Extends CppTranslator
 	
 End
 
-Class StdcppTarget Extends Target
-	
+
+Class wxMonkeyBuilder Extends Builder
+
 	Field cc_opts:String
 	
 	Global use_wx:Int=0
-
 	
-	Function IsValid()
-		If FileType( "stdcpp" )<>FILETYPE_DIR Return False
-		Select HostOS
-		Case "winnt"
-			If MINGW_PATH Return True
-		Case "macos"
-			Return True
-		Case "linux"
-			Return True
-		End
+
+	Method New( tcc:TransCC )
+		Super.New( tcc )
 	End
 
-	Method Begin()
-		ENV_TARGET="stdcpp"
+	Method PreConfig:Void()
+		
+		If GetCfgVar("WXMONKEY") Then use_wx = 1
+	
+			
+		If GetCfgVar("CC_OPTS")
+			cc_opts=cc_opts+" "+GetCfgVar("CC_OPTS")
+	
+		Endif
+
+		
+	End
+
+	Method Config:String()
+		Local config:=New StringStack
+		For Local kv:=Eachin _cfgVars
+			config.Push "#define CFG_"+kv.Key+" "+kv.Value
+		Next
+		Return config.Join( "~n" )
+	End
+	
+	Method IsValid:Bool()
+		Select HostOS
+		Case "winnt"
+			If tcc.MINGW_PATH Return True
+		Default
+			Return True
+		End
+		Return False
+	End
+
+	Method Begin:Void()
 		ENV_LANG="cpp"
 		_trans=New wxTranslator
 	End
 	
-	Method PreConfig:Void()
-		For Local kv:=Eachin Env
-			Local remove?=False
-			
-			If kv.Key = "WXMONKEY" Then use_wx = 1
-			If kv.Key.StartsWith("CC_OPTS")
-				cc_opts=cc_opts+" "+kv.Value
-				remove = True
-			Endif
-			
-			If remove Then Env.Remove(kv.Key)
-		Next
-	End
-	
-	Method Config$()
-		Local config:=New StringStack
-
-		For Local kv:=Eachin Env
-			'If Not kv.Key.StartsWith("CC_OPTS")
-				config.Push "#define CFG_"+kv.Key+" "+kv.Value
-			'Endif
-		Next
-
-		Return config.Join( "~n" )
-	End
-	
-	Method MakeTarget()
+	Method MakeTarget:Void()
 	
 		Select ENV_CONFIG
-		Case "debug" Env.Set "DEBUG","1"
-		Case "release" Env.Set "RELEASE","1"
-		Case "profile" Env.Set "PROFILE","1"
+		Case "debug" SetCfgVar "DEBUG","1"
+		Case "release" SetCfgVar "RELEASE","1"
+		Case "profile" SetCfgVar "PROFILE","1"
 		End
 		
-		Local main$
+		If GetCfgVar("WXMONKEY") Print "WXMONKEY"
 		
-
-		main=LoadString("main.cpp")
+		Local main:=LoadString( "main.cpp" )
+		
 		PreConfig()
-		
+
 		main=ReplaceBlock( main,"TRANSCODE",transCode )
 		main=ReplaceBlock( main,"CONFIG",Config() )
-		
-		If use_wx
-	
-		Endif
-		
-		
+
+
 		SaveString main,"main.cpp"
 		
-		
-		If HostOS = "macos" And use_wx
-		
-			MakeXcode()
+		If tcc.opt_build
 
-		Else
-		
-
-		If OPT_ACTION>=ACTION_BUILD
-
-			Local out$="main_"+HostOS
+			Local out:="main_"+HostOS
 			DeleteFile out
 			
-			Print "cc_opts: "+cc_opts
+			Local OPTS:="",LIBS:=""
 			
 			Select ENV_HOST
 			Case "macos"
-				Select ENV_CONFIG
-				Case "release"
-					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -O3 -o "+out+" main.cpp"+cc_opts
-				Case "debug"
-					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -o "+out+" main.cpp"+cc_opts
-				End
-			Default
-				Select ENV_CONFIG
-				Case "release"
-					Execute "g++ -O3 -o "+out+" main.cpp "+cc_opts
-				Case "profile"
-					Execute "g++ -O3 -o "+out+" main.cpp -lwinmm "+cc_opts
-				Case "debug"
-					Execute "g++ -o "+out+" main.cpp "+cc_opts
-				End
+				OPTS+=" -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3"
+			Case "winnt"
+				LIBS+=" -lwinmm -lws2_32"
+			End
+			
+			Select ENV_CONFIG
+			Case "release"
+				OPTS+=" -O3 -DNDEBUG"
 			End
 
-			If OPT_ACTION>=ACTION_RUN
+			
+			If cc_opts Then Print "g++"+OPTS+" -o "+out+" main.cpp"+LIBS+" "+cc_opts
+			Execute "g++"+OPTS+" -o "+out+" main.cpp"+LIBS+" "+cc_opts
+			
+			If tcc.opt_run
 				Execute "~q"+RealPath( out )+"~q"
 			Endif
-		Endif
-
-		Endif	
-
-	End
-	
-
-	
-	Method MakeXcode()
-		CreateDataDir "xcode/data"
-
-		'Local main$=LoadString( "main.cpp" )
-		
-		'main=ReplaceBlock( main,"TRANSCODE",transCode )
-		'main=ReplaceBlock( main,"CONFIG",Config() )
-		
-		'SaveString main,"main.cpp"
-		
-		If OPT_ACTION>=ACTION_BUILD
-
-			ChangeDir "xcode"
-			
-			Execute "xcodebuild -configuration "+CASED_CONFIG+" "+cc_opts
-			
-			If OPT_ACTION>=ACTION_RUN
-				ChangeDir "build/"+CASED_CONFIG
-				ChangeDir "wxMonkeyApp.app/Contents/MacOS"
-				Execute "./wxMonkeyApp"
-			Endif
-			
 		Endif
 	End
 	
 End
+
+
 

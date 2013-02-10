@@ -4,23 +4,29 @@ Import wxmonkey
 Extern
 
 ''use to access the main application
-Class wxTheApp
+Class wxTheApp Extends VarPtr = "wxTheApp"
 
-	Function OnInit:Bool() = "wxTheApp->OnInit"
-	Function CallOnInit:Bool() = "wxTheApp->CallOnInit"
-	Function OnRun:Bool() = "wxTheApp->OnRun"
-	Function OnExit:Bool() = "wxTheApp->OnExit"
+	Method OnInit:Int() = "OnInit"
+	Method CallOnInit:Bool() = "CallOnInit"
+	Method OnRun:Int() = "OnRun"
+	Method OnExit:Int() = "OnExit"
 	
 End
 
+Global wxTheAppInstance:wxTheApp = "wxTheApp"
+Function wxTheAppSetInstance:Int(app:wxApp) = "wxApp::SetInstance"
+Function wxTheAppInstanceInit:Int() = "wxTheApp->OnInit"
+Function wxTheAppInstanceRun:Int() = "wxTheApp->OnRun"
+Function wxTheAppInstanceExit:Int() = "wxTheApp->OnExit"
 
+Function wxAppBaseInit:Int() = "wxApp::OnInit"
 
 Class wxApp = "wxMonkeyApp"
 	
 	
 	'' used for initialization
-	Function wxInit:Bool() = "wxApp::OnInit"
-	Function SetInstance:Int(app:wxApp)="wxApp::SetInstance"
+	'Function wxInit:Int() = "OnInit"
+	Function SetInstance:Int(app:wxApp)="SetInstance"
 	
 	#rem
 	bbdoc: This must be provided by the application, And will usually create the application's main window, optionally calling wxApp::SetTopWindow.
@@ -32,7 +38,7 @@ Class wxApp = "wxMonkeyApp"
 	Return True To Continue processing, False To Exit the application immediately.
 
 	#End
-	Method OnInit:Bool()="OnMonkeyInit"
+	Method OnInit:Int()="OnMonkeyInit"
 
 
 	#rem
@@ -44,12 +50,12 @@ Class wxApp = "wxMonkeyApp"
 	Method If you override it.
 
 	#End
-	Method OnExit:Bool()
+	Method OnExit:Int()
 
 	#rem
 	OnRun() does not need to be overloaded, except for non-gui
 	#end
-	Method OnRun:Bool()
+	Method OnRun:Int()
 	
 	'' executes OnRun()
 	'' *** If you override MainLoop, you will need to call monkey's gc_collect via a timer
@@ -92,9 +98,13 @@ End
 
 Class wxAppBase
 	
-	Function OnRun:Bool() = "wxAppBase::OnRun"
-	Function MainLoop:Bool() = "wxAppBase::MainLoop"
+	Function OnRun:Bool() = "OnRun"
+	Function MainLoop:Bool() = "MainLoop"
 	
 End
 
 Public
+
+
+
+

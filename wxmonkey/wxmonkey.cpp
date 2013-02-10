@@ -49,12 +49,14 @@ public:
 class GCTimer : public wxTimer {
 public:
 	//GCTimer(wxEvtHandler* e=NULL, int id=-1):wxTimer(e, id) {};
-	gc_object* force;
-	
+
+	//gc_object* force;
+
 	void Notify() {
 		//gc_force();
-		gc_object* force = new gc_object;
-		force=0;
+		//gc_object* force = new gc_object;
+		//force=0;
+		gc_force_sweep=true;
 		gc_collect();
 		
 	}
@@ -86,7 +88,7 @@ public:
 	virtual bool OnInit();
 
 	//int MainLoop();
-	virtual bool OnMonkeyInit()=0;
+	virtual int OnMonkeyInit()=0;
 	
 	void CallGC(wxIdleEvent& event);
 	
@@ -167,7 +169,8 @@ public:
 		//Object::mark();
 		//printf("mpanelMARK\n"); fflush(stdout);
 	};
-
+	
+	wxSize* wxMonkeyGetSize() { return new wxSize(GetSize().x, GetSize().y); };
 	//String debug() {};
 };
 
@@ -213,12 +216,38 @@ bool wxMonkeyMessageDialog::Create(wxWindow* parent, const wxString& title, cons
 	return wxMessageDialog::Create(parent, wxID_ANY, title, pos, wxDefaultSize, style | wxCAPTION , L"");
 };
 
-class wxMonkeyDC : public Object {
+
+
+class wxMonkeyDC : public Object, public wxDC {
 public:
-	wxMonkeyDC() {};
-	~wxMonkeyDC() {};
+	
+	wxMonkeyDC();
+	~wxMonkeyDC();
+	static wxPaintDC* CreatePaintDC(wxWindow* win);
+	static wxClientDC* CreateClientDC(wxWindow* win);
+	
+	void DoGetSize(int*, int*) const;
+	
 	void mark() { Object::mark(); };
 };
+
+wxMonkeyDC::wxMonkeyDC() {};
+wxMonkeyDC::~wxMonkeyDC() {};
+void wxMonkeyDC::DoGetSize(int*w, int*h) const { wxDC::DoGetSizeMM(w, h); };
+
+wxPaintDC* wxMonkeyDC::CreatePaintDC(wxWindow* win) {
+
+	return (new wxPaintDC(win));
+
+};
+
+wxClientDC* wxMonkeyDC::CreateClientDC(wxWindow* win) {
+
+	return (new wxClientDC(win));
+
+};
+
+
 
 class wxMonkeyTimer :  public Object, public wxTimer {
 public:
@@ -231,6 +260,26 @@ public:
 	
 	//void Notify() {};
 };
+
+class wxMonkeyEvtHandler :  public Object, public wxEvtHandler {
+public:
+	wxMonkeyEvtHandler() {};
+	~wxMonkeyEvtHandler() {};
+	void mark() { 
+		Object::mark();
+	};
+};
+
+
+class wxMonkeySizer : public Object, public wxSizer {
+public:
+	wxMonkeySizer() {};
+	~wxMonkeySizer() {};
+	void mark() { 
+		Object::mark();
+	};
+};
+
 
 int glattrib [] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER};
 
@@ -264,9 +313,11 @@ class wxMonkeyGLCanvas :  public Object, public wxGLCanvas {
 public:
 	
 	
-	wxMonkeyGLCanvas() :wxGLCanvas(NULL, wxID_ANY, glattrib, wxDefaultPosition, wxSize(600,400), 0, "GLCANVAS" ) {};
+	wxMonkeyGLCanvas(wxWindow* parent) :wxGLCanvas(parent, wxID_ANY, glattrib, wxDefaultPosition, wxSize(40,40), 0, "GLCANVAS" ) {};
 	~wxMonkeyGLCanvas() {};
 	void mark() {  };
+	
+	static wxMonkeyGLCanvas* Create2(wxWindow* parent) { return new wxMonkeyGLCanvas(parent); }
 	
 	void Create_(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style=0, const wxString& name="GLCanvas", int attribList = 0, const wxPalette& palette = wxNullPalette) {
 #if defined(__WXMSW__)		
@@ -283,6 +334,8 @@ public:
 		//wxGLCanvas::SetCurrent(*(RC->context));
 		RC->SetCurrent2(this);
 	}
+	
+	wxSize* wxMonkeyGetSize() { return new wxSize(GetSize().x, GetSize().y); };
 	
 };
 
@@ -303,7 +356,7 @@ public:
     //wxMonkeyBitmap(int width, int height, int depth = -1): wxBitmap(width,height,depth) {};
 	
 	wxMonkeyBitmap();
-	//~wxMonkeyBitmap() { Print(L"wxbitmap delete"); };
+	~wxMonkeyBitmap();
 	
 	void mark() { 
 		//printf("mbMARK: %p\n",this);
@@ -312,7 +365,8 @@ public:
 	}
 
 };
-wxMonkeyBitmap::wxMonkeyBitmap() :wxBitmap() {};
+wxMonkeyBitmap::wxMonkeyBitmap() {};
+wxMonkeyBitmap::~wxMonkeyBitmap() {};
 
 /*
 // ***** WORKS with GC! ******

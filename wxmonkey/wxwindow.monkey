@@ -1,6 +1,10 @@
 ''
 ''wxwindow
 
+'' NOTES
+'' -- GetSize() must be on it's own line
+''
+
 Import wxmonkey
 
 Extern
@@ -49,8 +53,10 @@ Class wxWindow Extends wxEvtHandler
 	Method Fit:Void()
 	Method GetId:Int()
 	Method GetParent:wxWindow()
+	Method GetSize:wxSize()="wxMonkeyGetSize" ' "new wxSize(GetSize().x, GetSize().y);//"
 	
 	Method RegisterHotKey:Bool(hotkeyId:Int, modifiers:Int, virtualKeyCode:Int)
+	Method Reparent:Bool(newParent:wxWindow)
 	
 	Method SetExtraStyle:Void(exStyle:Int)
 	Method SetFocus:Void()

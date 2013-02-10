@@ -5,6 +5,7 @@ Import wxmonkey
 
 Extern
 
+Global wxNullPalette:wxPalette ="wxNullPalette"
 
 Class wxPalette
 

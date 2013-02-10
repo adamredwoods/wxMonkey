@@ -1,0 +1,28 @@
+
+wxMonkey
+(c) 2012 Adam Piette
+--------------------
+
+NOTES
+
+- compile the new trans.exe first, with the modified wxtarget, or make your own target.
+
+- use wxString() function to convert to and from wxStrings and monkey Strings. wxMString is a transparent class to give errors if it doesn't match.
+  
+- if a referenced argument is needed, use VarPtr class. this will add "&class" or "class.method"
+
+- if a dereferenced pointer is needed for passing, use Pointer class.
+
+- if a function pointer is needed, use the function FuncPtr(). It creates a function pointer at monkey compile time.
+
+- your wxApp must be global (or it will be GC'ed). initialise apps with wxMonkeyStart(app)
+
+- to extend wxMonkey (if you are ambitious) and create a class from wxWidgets, you will need to create some cpp glue code. most glue code is fairly simple, where it is just a name of the class, inheriting Object class (from monkey),  then empty constructors and decontructors.
+
+
+feb 2013
+-----------------------
+updated wxMonkey for MonkeyV67
+- a touch cleaner
+- config.monkey files are automatic for cc_opts building
+- renamed special pointer classes: FuncPtr, VarPtr, Pointer

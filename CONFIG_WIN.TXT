@@ -1,6 +1,0 @@
-
-CPP_INCREMENTAL_GC=1
-CPP_DOUBLE_PRECISION_FLOATS=1
-CC_OPTS=  -I"C:\Monkey\modules\wxmonkey\wxMSW-2.8.12\include" -L"c:/mingw/lib" -L"C:\Monkey\modules\wxmonkey\wxMSW-2.8.12\lib\gcc_lib"
-CC_OPTS2=  -static -lwxregex -lwxexpat -lwxmsw28_core  -lwxbase28 -lwxjpeg -lwxpng -lwxtiff -lwxmsw28_gl -Wl,--subsystem,windows -mwindows -D__WXRELEASE__ -D__WXMSW__ 
-CC_OPTS3= -lstdc++ -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32 -lodbc32

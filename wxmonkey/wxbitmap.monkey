@@ -22,7 +22,7 @@ Extern
 Class wxJPEGHandler Extends wxBitmapHandler = "wxJPEGHandler"
 End
 
-Class wxBitmap Extends wxMonkeyDeref= "wxMonkeyBitmap"
+Class wxBitmap Extends Pointer= "wxMonkeyBitmap"
 	
 	Function AddHandler:Void( handler:wxBitmapHandler )="wxBitmap::AddHandler"
 	Method CleanUpHandlers:Void()

@@ -1,6 +1,6 @@
 wxMonkey v0.1 -- initial push (wxWidgets version 2.8.12)
 
-This is a port of wxWidgets to the programming language Monkey.
+This is a binding of wxWidgets to the programming language Monkey.
 This is highly experimental, and there is no guarantee.
 
 ..WINDOWS..

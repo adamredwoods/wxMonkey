@@ -12,37 +12,47 @@ Extern
 
 Class wxDC Extends Null = "wxMonkeyDC"
 	
-	Function wxPaintDC:Void(window:wxWindow) = "wxPaintDC wxdc"
-	Function wxClientDC:Void(window:wxWindow) = "wxClientDC wxdc"
+	Function CreatePaintDC:wxPaintDC(window:wxWindow) = "CreatePaintDC"
+	Function CreateClientDC:wxClientDC(window:wxWindow) = "CreateClientDC"
 	
-	Function Clear:Void() = "wxdc.Clear"
-	Function DrawBitmap:Void(bitmap:wxMonkeyDeref, x:Int, y:Int, transparent:Bool=False) ="wxdc.DrawBitmap"
-	Function DrawCircle:Void(x:Int, y:Int, radius:Int) ="wxdc.DrawCircle"
-	Function DrawIcon:Void(icon:wxIcon, x:Int, y:Int) ="wxdc.DrawIcon"
-	Function DrawRectangle:Void(x:Int, y:Int, width:Int, height:Int) ="wxdc.DrawRectangle"
-	Function DrawText:Void(text:wxMString, x:Int, y:Int) ="wxdc.DrawText"
-	Function EndDoc:Void() ="wxdc.EndDoc"
-	Function EndPage:Void() ="wxdc.EndPage"
-	Function StartDoc:Bool(message:wxMString) ="wxdc.StartDoc"
-	Function StartPage:Bool() ="wxdc.StartPage"
+	Method Clear:Void() = "Clear"
+	Method DrawBitmap:Void(bitmap:Pointer, x:Int, y:Int, transparent:Bool=False) ="DrawBitmap"
+	Method DrawCircle:Void(x:Int, y:Int, radius:Int) ="DrawCircle"
+	Method DrawIcon:Void(icon:wxIcon, x:Int, y:Int) ="DrawIcon"
+	Method DrawRectangle:Void(x:Int, y:Int, width:Int, height:Int) ="DrawRectangle"
+	Method DrawText:Void(text:wxMString, x:Int, y:Int) ="DrawText"
+	Method EndDoc:Void() ="EndDoc"
+	Method EndPage:Void() ="EndPage"
+	Method StartDoc:Bool(message:wxMString) ="StartDoc"
+	Method StartPage:Bool() ="StartPage"
 
 	
 End
 
-Class wxPaintDC_ Extends wxDC = "wxPaintDC"
+Class wxPaintDC Extends wxDC = "wxPaintDC"
 	
-	Function Create:wxPaintDC_(window:wxWindow) = "new wxPaintDC"
+	'Function  Create:wxPaintDC_(window:wxWindow) = "new wxPaintDC"
 	
 End
 
-Class wxClientDC_ Extends wxDC = "wxClientDC"
+Class wxClientDC Extends wxDC = "wxClientDC"
 	
-	Function Create:wxClientDC(window:wxWindow) = "new wxClientDC"
+	'Function Create:wxClientDC(window:wxWindow) = "new wxClientDC"
 
 End
 
 
 
 Public
+
+Function wxCreatePaintDC:wxPaintDC(win:wxWindow)
+	Return wxPaintDC.CreatePaintDC(win)
+End
+
+Function wxCreateClientDC:wxClientDC(win:wxWindow)
+	Return wxClientDC.CreateClientDC(win)
+End
+
+
 
 

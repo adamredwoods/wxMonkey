@@ -4,7 +4,7 @@ Import wxmonkey
 Global app:MyApp = New MyApp
 
 Function Main()
-	
+
 	wxMonkeyStart(app)
 	
 End
@@ -12,7 +12,10 @@ End
 
 
 Class tester
-	Field i:Float = 0.0
+	Field i:Float = 999.0
+	Method set(j:Float)
+		i=j
+	End
 End
 
 Class MyFrame Extends wxFrame
@@ -26,6 +29,7 @@ Class MyFrame Extends wxFrame
 	Field paintpanel:PaintPanel
 	Field panel2:wxPanel
 	
+	
 	Field text_control:wxTextCtrl
 	
 	Global DYNAMIC_ABOUT:Int = wxID_ABOUT
@@ -34,6 +38,11 @@ Class MyFrame Extends wxFrame
 	Global PAINTEVENT:Int = wxID_ANY
 	'Field show_about:MyCommandEvent = New MyCommandEvent
 	
+	'Field file_dialog:wxFileDialog
+	
+	Method New()
+		Local jj:Int=0
+	End
 	
 	Method CreateMenu()
 		fileMenu= New wxMenu
@@ -44,8 +53,9 @@ Class MyFrame Extends wxFrame
 		
 		SetMenuBar(menuBar)
 		
-		Connect(DYNAMIC_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandFunc(wxFuncPtr(ShowAbout() )) )
+		Connect(DYNAMIC_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandFunc(FuncPtr(ShowAbout() )) )
 
+		
 		
 		Print 400
 	End
@@ -63,21 +73,21 @@ Class MyFrame Extends wxFrame
 		
 		button1 = New wxButton
 		button1.Create(Self, FILELOAD, wxString("file dialog"), wxCreatePoint(0,0), wxCreateSize(95,40))
-		Connect(FILELOAD, wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandFunc(wxFuncPtr(ShowFileChooser() )) )
+		Connect(FILELOAD, wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandFunc(FuncPtr(ShowFileChooser() )) )
 		
 		button2 = New wxButton
 		button2.Create(Self, FILECLEAR, wxString("clear image"), wxCreatePoint(120,0), wxCreateSize(95,40))
-		Connect(FILECLEAR, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandFunc(wxFuncPtr(paintpanel.ClearImage() )),Null, paintpanel )
+		Connect(FILECLEAR, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandFunc(FuncPtr(paintpanel.ClearImage() )),Null, paintpanel )
 		
-		paintpanel.Connect( PAINTEVENT, wxEVT_PAINT, wxPaintFunc(wxFuncPtr(paintpanel.OnPaint() ) ) )
+		paintpanel.Connect( PAINTEVENT, wxEVT_PAINT, wxPaintFunc(FuncPtr(paintpanel.OnPaint() ) ) )
 		
 		text_control = New wxTextCtrl
-		text_control.Create(Self, 1, wxString("type here"), wxCreatePoint(250,10), wxCreateSize(200,25),wxTE_PROCESS_TAB)
+		text_control.Create(Self, 1, wxString("type here"), wxCreatePoint(250,10), wxCreateSize(200,25),wxTE_PROCESS_TAB|wxTE_PROCESS_ENTER)
 		
 		''instant update
-		'Connect( wxID_ANY, wxEVT_COMMAND_TEXT_UPDATE, wxCommandFunc(wxFuncPtr(UpdateText())))
+		'Connect( wxID_ANY, wxEVT_COMMAND_TEXT_UPDATED, wxCommandFunc(wxFuncPtr(UpdateText())))
 		''need to hit enter
-		Connect( wxID_ANY, wxEVT_COMMAND_TEXT_ENTER, wxCommandFunc(wxFuncPtr(UpdateText())))
+		Connect( wxID_ANY, wxEVT_COMMAND_TEXT_ENTER, wxCommandFunc(FuncPtr(UpdateText())))
 		
 	End
 	
@@ -96,6 +106,11 @@ Class MyFrame Extends wxFrame
 	
 	Method ShowFileChooser:Void(e:wxCommandEvent=Null)
 		Local file_dialog:wxFileDialog = New wxFileDialog
+		
+		'Local test:tester = New tester
+		'test.set(10.0)
+		
+		'file_dialog = New wxFileDialog
 		file_dialog.Create(Self, wxString("choose a file"), wxEmptyString, wxEmptyString, wxString("*.*"),wxFD_OPEN)
 		'file_dialog.Create(Self, teststring, wxEmptyString, wxEmptyString, teststring,wxFD_OPEN, wxDefaultPosition, wxDefaultSize, teststring)
 		Local fd_val:Int = file_dialog.ShowModal()
@@ -105,6 +120,10 @@ Class MyFrame Extends wxFrame
 			'paintpanel.LoadImage("H:\_work\software_dev\_monkey\wxMonkey\183.jpg")
 			paintpanel.LoadImage(wxString(file_dialog.GetPath()))
 		Endif
+		
+		'test.set(9.0)
+		'Print test.i
+		
 		file_dialog.Close()
 	End
 	
@@ -117,7 +136,7 @@ End
 Class PaintPanel Extends wxPanel
 	
 	Field img:wxBitmap '= New wxBitmap
-	Field dc:wxDC = New wxDC
+	'Field dc:wxClientDC = New wxClientDC
 	Field tt:tester
 	
 	
@@ -128,9 +147,9 @@ Class PaintPanel Extends wxPanel
 		img = New wxBitmap
 		img.LoadFile(wxString(f),wxBITMAP_TYPE_JPEG)
 		
-		
+		Local dc:wxClientDC = wxCreateClientDC(Self)
 		If img
-			dc.wxClientDC(Self)
+			
 			dc.DrawBitmap(img, 0,0)
 
 		Endif
@@ -139,7 +158,7 @@ Class PaintPanel Extends wxPanel
 	''redraw, not initial draw
 	Method OnPaint:Void(e:wxPaintEvent=Null)
 	
-		dc.wxPaintDC(Self)
+		Local dc:wxPaintDC = wxCreatePaintDC(Self)
 	
 		If Not img Then Return	
 		
@@ -153,13 +172,14 @@ Class PaintPanel Extends wxPanel
 		
 
 		If Not img Then Return
-		
-		dc.wxClientDC(Self)
-		dc.Clear()
 		'img = Null
+		Local dc:wxClientDC = wxCreateClientDC(Self)
+		dc.Clear()
+		img = Null
+		
 		Print "clear"
 		'gcfree(img)
-		img = Null
+		
 	
 	
 	End
@@ -184,9 +204,12 @@ Class MyApp Extends wxApp
 	
 	Field name:String
 	
-	Method OnInit:Bool()
+	Method OnInit:Int()
+		
 
-		If ( Not wxApp.wxInit() )Then Return False
+		'If ( Not wxApp.wxInit() )Then Return False
+		If ( Not wxAppBaseInit() )Then Return False
+
 		
 		'wxInitAllImageHandlers
 		wxAddJPEGHandler()

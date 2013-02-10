@@ -31,7 +31,7 @@ Class MyFrame Extends wxFrame
 		
 		SetMenuBar(menuBar)
 		
-		Connect(DYNAMIC_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandFunc(wxFuncPtr(ShowAbout() )) )
+		Connect(DYNAMIC_ABOUT, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandFunc(FuncPtr(ShowAbout() )) )
 
 	End
 	
@@ -60,9 +60,9 @@ Class MyApp Extends wxApp
 	
 
 	
-	Method OnInit:Bool()
+	Method OnInit:Int()
 
-		If ( Not wxApp.wxInit() )Then Return False
+		If ( Not wxAppBaseInit() )Then Print "no init"; Return False
 
 		
 	    '' create the main application window
@@ -71,7 +71,7 @@ Class MyApp Extends wxApp
 		frame.SetTitle(wxString("Minimal wxWidgets App"))
 
 		If frame = Null Then Print "frame null" ; Return False
-		
+	
 		frame.CreateMenu()
 				
 	    '' show it (the frames, unlike simple controls, are Not shown when created initially)

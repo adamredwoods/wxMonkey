@@ -5,6 +5,11 @@
 
 #WXMONKEY=1
 
+#if TARGET<>"glfw"
+#Error "need monkey target"
+#endif
+
+
 'Import "wxMSW-2.8.12/src/msw/app.cpp"
 Import "wxmonkey.cpp"
 
@@ -14,23 +19,27 @@ Import wxapp
 Import wxaboutbox
 Import wxbitmap
 Import wxbutton
+Import wxboxsizer
 Import wxcontrol
 Import wxdc
 Import wxdialog
 Import wxevthandler
 Import wxfiledialog
 Import wxframe
+Import wxglcontext
 Import wximage
 Import wxmask
 Import wxmenu
 Import wxmenubar
 Import wxmessagedialog
 Import wxobject
+Import wxpalette
 Import wxicon
 
 Import wxpanel
 Import wxpoint
 Import wxsize
+Import wxsizer
 Import wxtimer
 Import wxrect
 Import wxwindow
@@ -38,6 +47,14 @@ Import wxvalidator
 
 
 Import wxtextctrl
+
+
+''MOJO stuff
+#BRL_GAME_IMPORTED=0
+#if BRL_GAME_IMPORTED<>0
+
+Import "wxmonkeymojo.cpp"
+#endif
 
 
 Extern
@@ -66,17 +83,17 @@ Extern
 	Class wxMString ' = "wxMString"
 	End
 	
-	Class wxMString_ Extends wxMonkeyRef = "wxString"
+	Class wxMString_ Extends VarPtr = "wxString"
 	End
 	
 	Class wxWindowID
 	End
 	
 	''pass by reference, picked up by wxTranslator compiler
-	Class wxMonkeyRef 'Extends Null
+	Class VarPtr Extends Null
 	End
 	
-	Class wxMonkeyDeref
+	Class Pointer
 	End
 	
 	
@@ -85,9 +102,11 @@ Extern
 	End
 	
 	''These functions are picked up by wxTranslator and create a casted function pointer
-	Function wxFuncPtr:Int(f:Void) ''creates a fp
-	Function wxCommandFunc:wxMonkeyRef(f:Int) = "wxCommandEventHandler" ''use with a casted fp
-	Function wxPaintFunc:wxMonkeyRef(f:Int) = "wxPaintEventHandler"
+	Function FuncPtr:Int(f:Void) ''creates a fp
+	Function wxEventFunc(f:Int) = "wxEventHandler"
+	Function wxCommandFunc:VarPtr (f:Int) = "wxCommandEventHandler" ''use with a casted fp
+	Function wxPaintFunc:VarPtr (f:Int) = "wxPaintEventHandler"
+	Function wxTimerFunc:VarPtr (f:Int) = "wxTimerEventHandler"
 	
 	
 	Function Implement_App_Monkey:Int(a:wxApp)="IMPLEMENT_APP_MONKEY"
@@ -105,14 +124,17 @@ Public
 '' -- this can be done manually if there are other things that want to be done. (unit testing, console, etc).
 Function wxMonkeyStart(app:wxApp)
 
-	wxApp.SetInstance(app)
-	'New wxInitializer()
-	
-	wxEntryStart()
+	wxTheAppSetInstance(app)
 
-	If wxTheApp.OnInit()
-		wxTheApp.OnRun()
-		wxTheApp.OnExit()
+	'New wxInitializer()
+	wxEntryStart()
+	
+	'' crashes on exit if using app.OnExit(), so use the textbook way
+	If wxTheAppInstanceInit()
+		wxTheAppInstanceRun()
+		wxTheAppInstanceExit()
+	Else
+		Print "wxApp init failure."
 	Endif
 	
 	wxEntryCleanup()
