@@ -1,4 +1,4 @@
-wxMonkey v0.12 -- updated for MonkeyV67
+wxMonkey v0.12 -- updated for MonkeyV67  
 wxMonkey v0.1 -- initial push (wxWidgets version 2.8.12)
 
 This is a binding of wxWidgets to the programming language Monkey.
