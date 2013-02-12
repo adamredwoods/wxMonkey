@@ -11,7 +11,7 @@ To install, you must be able to create a new target comfortably:
 3. copy targets/wxmonkey folder to your local monkey/targets folder  
 4. copy transcc/builders/wxmonkey.monkey to your local src/transcc/builders/ folder  
 5. rebuild src/transcc, and copy to monkey/bin folder (use the C++_STD TOOL)  
-6. edit CONFIG.TXT, make sure the paths in CONFIG point to wxWidgets paths for include, mingw (or compiler stdlibs), and wx static libs  
+6. edit targets/wxmonkey/template/CONFIG.MONKEY, make sure the paths in CONFIG point to wxWidgets paths for include, mingw (or compiler stdlibs), and wx static libs  
 7. compile minimal example  
 
 ..OSX (10.6+)..  
@@ -22,7 +22,7 @@ To install, you must be able to create a new target comfortably:
 4. copy transcc/builders/wxmonkey.monkey to your local src/transcc/builders/ folder  
 5. rebuild src/transcc, and copy to monkey/bin folder (use the C++_STD TOOL)  
 6. rebuild src/trans, and copy to monkey/bin folder  
-7. edit CONFIG.TXT, make sure the paths in CONFIG point to wxWidgets paths for include, and wx static libs  
+7. edit targets/wxmonkey/template/CONFIG.MONKEY, make sure the paths in CONFIG point to wxWidgets paths for include, and wx static libs  
 8. compile minimal example again  
 
 
