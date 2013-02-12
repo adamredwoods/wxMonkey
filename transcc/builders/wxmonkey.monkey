@@ -183,7 +183,11 @@ Class wxMonkeyBuilder Extends Builder
 	End
 	
 	Method MakeTarget:Void()
-	
+		
+		CreateDir casedConfig
+		
+		CreateDataDir casedConfig+"/data"
+		
 		Select ENV_CONFIG
 		Case "debug" SetCfgVar "DEBUG","1"
 		Case "release" SetCfgVar "RELEASE","1"
@@ -204,7 +208,7 @@ Class wxMonkeyBuilder Extends Builder
 		
 		If tcc.opt_build
 
-			Local out:="main_"+HostOS
+			Local out:=casedConfig+"/wxmain_"+HostOS
 			DeleteFile out
 			
 			Local OPTS:="",LIBS:=""
@@ -226,7 +230,9 @@ Class wxMonkeyBuilder Extends Builder
 			Execute "g++"+OPTS+" -o "+out+" main.cpp"+LIBS+" "+cc_opts
 			
 			If tcc.opt_run
-				Execute "~q"+RealPath( out )+"~q"
+				ChangeDir casedConfig
+				
+				Execute "~q"+RealPath( "wxmain_"+HostOS )+"~q"
 			Endif
 		Endif
 	End

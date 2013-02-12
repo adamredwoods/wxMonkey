@@ -8,6 +8,7 @@
 #include <vector>
 #include <typeinfo>
 #include <signal.h>
+#include <time.h>
 
 #if _WIN32
 #include <windows.h>
